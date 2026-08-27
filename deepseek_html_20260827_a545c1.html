@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎥 YouTube Sub Simulator</title>
+    <style>
+        /* ───────── Reset & Base ───────── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ───────── Main Container ───────── */
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* ───────── Channel Banner ───────── */
+        .banner {
+            height: 140px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460, #1a1a2e);
+            background-size: 300% 300%;
+            animation: bannerGradient 8s ease infinite;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 30px 20px;
+        }
+
+        @keyframes bannerGradient {
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, rgba(15, 15, 15, 0.8) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .channel-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4, #ffe66d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f0f0f;
+            border: 3px solid #0f0f0f;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .channel-info {
+            margin-left: 18px;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .channel-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .channel-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+            letter-spacing: -0.5px;
+        }
+
+        .channel-name-input {
+            font-size: 24px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 4px 14px;
+            color: #fff;
+            font-family: inherit;
+            width: 220px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .channel-name-input:focus {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.08);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.08);
+        }
+
+        .verify-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #3ea6ff;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px 2px 8px;
+            border-radius: 12px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .verify-badge::before {
+            content: "✓";
+            font-size: 14px;
+        }
+
+        .channel-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 6px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            flex-wrap: wrap;
+        }
+
+        .channel-stats span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .channel-stats .stat-value {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* ───────── Settings Bar ───────── */
+        .settings-bar {
+            display: flex;
+            gap: 16px;
+            padding: 16px 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .settings-bar label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-bar select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            padding: 6px 14px 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        .settings-bar select:focus {
+            border-color: #4ecdc4;
+        }
+
+        .settings-bar select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .settings-divider {
+            width: 1px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ───────── Sub Count Display ───────── */
+        .sub-display {
+            padding: 30px 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .sub-number {
+            font-size: 72px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, #ffffff 30%, #8ab4f8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.15s ease;
+            display: inline-block;
+        }
+
+        .sub-number.pulse {
+            animation: countPulse 0.3s ease;
+        }
+
+        .sub-number.gain {
+            animation: countGain 0.5s ease;
+        }
+
+        .sub-number.loss {
+            animation: countLoss 0.5s ease;
+        }
+
+        @keyframes countPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            40% {
+                transform: scale(1.04);
+            }
+        }
+
+        @keyframes countGain {
+            0% {
+                transform: scale(1);
+                color: #4ecdc4;
+            }
+            30% {
+                transform: scale(1.08);
+                color: #4ecdc4;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes countLoss {
+            0% {
+                transform: scale(1);
+                color: #ff6b6b;
+            }
+            30% {
+                transform: scale(0.92);
+                color: #ff6b6b;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .sub-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .sub-change {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .sub-change .gain {
+            color: #4ecdc4;
+        }
+        .sub-change .loss {
+            color: #ff6b6b;
+        }
+        .sub-change span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ───────── Content / Device Badges ───────── */
+        .badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .badge-pill {
+            font-size: 12px;
+            padding: 4px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.5);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-pill .emoji {
+            font-size: 14px;
+        }
+
+        /* ───────── Controls ───────── */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            padding: 16px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4ecdc4, #44b3ab);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(78, 205, 196, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(78, 205, 196, 0.35);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #e55a5a);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 107, 107, 0.25);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: #fff;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ───────── Comments Section ───────── */
+        .comments-section {
+            padding: 20px 30px 30px;
+        }
+
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .comments-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comments-header .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            animation: livePulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+        }
+
+        .comments-header .comment-count {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .comments-feed {
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 6px;
+            scroll-behavior: smooth;
+        }
+
+        .comments-feed::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .comments-feed::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .comments-feed::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            transition: background 0.2s;
+            animation: commentSlide 0.4s ease forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .comment-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        @keyframes commentSlide {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            user-select: none;
+        }
+
+        .comment-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .comment-username {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .comment-username .time {
+            font-weight: 400;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .comment-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 2px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .comment-text .highlight {
+            color: #3ea6ff;
+        }
+
+        .comment-likes {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.2);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ───────── Empty state ───────── */
+        .empty-comments {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.15);
+            padding: 40px 0;
+            font-size: 14px;
+        }
+
+        .empty-comments .big-emoji {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        /* ───────── Responsive ───────── */
+        @media (max-width: 700px) {
+            .container {
+                border-radius: 16px;
+            }
+
+            .banner {
+                height: 120px;
+                padding: 0 16px 16px;
+            }
+
+            .channel-avatar {
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+            }
+
+            .channel-name {
+                font-size: 18px;
+            }
+
+            .channel-name-input {
+                font-size: 18px;
+                width: 140px;
+                padding: 2px 10px;
+            }
+
+            .channel-stats {
+                font-size: 11px;
+                gap: 12px;
+            }
+
+            .settings-bar {
+                padding: 12px 16px;
+                gap: 10px;
+            }
+
+            .settings-bar label {
+                font-size: 10px;
+            }
+            .settings-bar select {
+                font-size: 12px;
+                min-width: 80px;
+                padding: 4px 10px;
+            }
+
+            .sub-number {
+                font-size: 48px;
+            }
+
+            .sub-display {
+                padding: 20px 16px 16px;
+            }
+
+            .sub-change {
+                font-size: 12px;
+                gap: 16px;
+            }
+
+            .controls {
+                padding: 12px 16px;
+                gap: 10px;
+            }
+            .btn {
+                padding: 8px 18px;
+                font-size: 12px;
+            }
+
+            .comments-section {
+                padding: 16px 16px 20px;
+            }
+            .comments-feed {
+                max-height: 240px;
+            }
+            .comment-item {
+                padding: 10px 8px;
+            }
+            .badge-row {
+                gap: 8px;
+            }
+            .badge-pill {
+                font-size: 10px;
+                padding: 3px 12px;
+            }
+            .settings-divider {
+                display: none;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .sub-number {
+                font-size: 36px;
+            }
+            .channel-name {
+                font-size: 15px;
+            }
+            .channel-name-input {
+                font-size: 15px;
+                width: 100px;
+            }
+            .channel-avatar {
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            .banner {
+                height: 90px;
+                padding: 0 12px 12px;
+            }
+            .verify-badge {
+                font-size: 9px;
+                padding: 1px 8px 1px 6px;
+            }
+            .channel-stats {
+                font-size: 10px;
+                gap: 8px;
+            }
+            .sub-change {
+                font-size: 11px;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            .comments-feed {
+                max-height: 180px;
+            }
+            .settings-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .settings-bar label {
+                justify-content: space-between;
+            }
+            .settings-bar select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+
+        <!-- ─── Banner ─── -->
+        <div class="banner">
+            <div class="banner-overlay"></div>
+            <div class="channel-avatar" id="avatarDisplay">🎮</div>
+            <div class="channel-info">
+                <div class="channel-name-row">
+                    <input type="text" class="channel-name-input" id="channelNameInput" value="MyChannel" maxlength="30" spellcheck="false" />
+                    <span class="verify-badge">Verified</span>
+                </div>
+                <div class="channel-stats">
+                    <span>📺 <span class="stat-value" id="viewCount">0</span> views</span>
+                    <span>📅 Joined <span class="stat-value" id="joinDate">2024</span></span>
+                    <span>🎬 <span class="stat-value" id="videoCount">0</span> videos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── Settings ─── -->
+        <div class="settings-bar">
+            <label>
+                🎯 Content
+                <select id="contentStyle">
+                    <option value="gaming">🎮 Gaming</option>
+                    <option value="tech">💻 Tech Reviews</option>
+                    <option value="vlogs">📸 Vlogs</option>
+                    <option value="cooking">🍳 Cooking</option>
+                    <option value="music">🎵 Music</option>
+                    <option value="fitness">💪 Fitness</option>
+                    <option value="comedy">😂 Comedy</option>
+                    <option value="education">📚 Education</option>
+                    <option value="travel">🌍 Travel</option>
+                    <option value="art">🎨 Art</option>
+                </select>
+            </label>
+            <div class="settings-divider"></div>
+            <label>
+                📱 Device
+                <select id="deviceSelect">
+                    <option value="pc">🖥️ PC</option>
+                    <option value="playstation">🎮 PlayStation</option>
+                    <option value="xbox">🟢 Xbox</option>
+                    <option value="mobile">📱 Mobile</option>
+                    <option value="nintendo">🔴 Nintendo</option>
+                </select>
+            </label>
+            <div class="settings-divider"></div>
+            <label>
+                ⚡ Speed
+                <select id="speedSelect">
+                    <option value="0.5">🐢 0.5x</option>
+                    <option value="1" selected>🐇 1x</option>
+                    <option value="2">🚀 2x</option>
+                    <option value="4">💥 4x</option>
+                    <option value="8">🔥 8x</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- ─── Sub Count ─── -->
+        <div class="sub-display">
+            <div>
+                <span class="sub-number" id="subCount">0</span>
+            </div>
+            <div class="sub-label">Subscribers</div>
+            <div class="sub-change">
+                <span class="gain">▲ +<span id="gainThisMin">0</span> this min</span>
+                <span class="loss">▼ <span id="lossThisMin">0</span> this min</span>
+            </div>
+            <div class="badge-row">
+                <span class="badge-pill"><span class="emoji" id="contentEmoji">🎮</span> <span id="contentLabel">Gaming</span></span>
+                <span class="badge-pill"><span class="emoji" id="deviceEmoji">🖥️</span> <span id="deviceLabel">PC</span></span>
+                <span class="badge-pill" id="growthBadge">📈 Growth: <span id="growthRateLabel">1.0x</span></span>
+            </div>
+        </div>
+
+        <!-- ─── Controls ─── -->
+        <div class="controls">
+            <button class="btn btn-primary" id="btnToggle">▶ Start</button>
+            <button class="btn btn-secondary" id="btnReset">⟳ Reset</button>
+            <button class="btn btn-secondary" id="btnBoost">⚡ Boost +50</button>
+        </div>
+
+        <!-- ─── Comments ─── -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <h3>
+                    <span class="live-dot"></span>
+                    Live Chat
+                    <span class="comment-count" id="commentCount">0 comments</span>
+                </h3>
+                <span style="font-size:12px;color:rgba(255,255,255,0.15);">● live</span>
+            </div>
+            <div class="comments-feed" id="commentsFeed">
+                <div class="empty-comments">
+                    <span class="big-emoji">💬</span>
+                    Start the simulation to see comments roll in...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── DOM refs ───
+            const subCountEl = document.getElementById('subCount');
+            const gainThisMin = document.getElementById('gainThisMin');
+            const lossThisMin = document.getElementById('lossThisMin');
+            const viewCountEl = document.getElementById('viewCount');
+            const videoCountEl = document.getElementById('videoCount');
+            const commentsFeed = document.getElementById('commentsFeed');
+            const commentCountEl = document.getElementById('commentCount');
+            const channelNameInput = document.getElementById('channelNameInput');
+            const avatarDisplay = document.getElementById('avatarDisplay');
+            const contentStyle = document.getElementById('contentStyle');
+            const deviceSelect = document.getElementById('deviceSelect');
+            const speedSelect = document.getElementById('speedSelect');
+            const contentEmoji = document.getElementById('contentEmoji');
+            const contentLabel = document.getElementById('contentLabel');
+            const deviceEmoji = document.getElementById('deviceEmoji');
+            const deviceLabel = document.getElementById('deviceLabel');
+            const growthRateLabel = document.getElementById('growthRateLabel');
+            const btnToggle = document.getElementById('btnToggle');
+            const btnReset = document.getElementById('btnReset');
+            const btnBoost = document.getElementById('btnBoost');
+
+            // ─── Content config ───
+            const CONTENT_CONFIG = {
+                gaming: {
+                    emoji: '🎮',
+                    label: 'Gaming',
+                    growthBase: 1.2,
+                    avatarOptions: ['🎮', '🕹️', '🎯', '⚔️', '🏆', '👾', '🔥', '💀'],
+                    comments: [
+                        'love this game!', 'what\'s your rank?', 'can you play {game}?', 'insane gameplay!',
+                        'best player ever!', 'how do you do that?', 'this is so hype!', 'GG!',
+                        'what mouse do you use?', 'your aim is crazy!', 'new sub here!', 'great content!',
+                        'when\'s the next stream?', 'this game is so fun to watch', 'you\'re cracked!',
+                        'what settings do you use?', 'I learned so much from this', 'keep it up!',
+                        'this is the best channel for {game}', 'love the energy!'
+                    ],
+                    games: ['Valorant', 'CS2', 'Fortnite', 'Apex', 'Minecraft', 'GTA V', 'COD', 'Rocket League',
+                        'League of Legends', 'Dota 2', 'Overwatch', 'Rust', 'Tarkov', 'DayZ'
+                    ]
+                },
+                tech: {
+                    emoji: '💻',
+                    label: 'Tech Reviews',
+                    growthBase: 1.1,
+                    avatarOptions: ['💻', '🖥️', '📱', '⌨️', '🖱️', '🔧', '⚡', '📡'],
+                    comments: [
+                        'great review!', 'what specs?', 'how much does it cost?', 'awesome breakdown!',
+                        'I bought this because of you', 'very informative!', 'best tech channel!',
+                        'what about the battery life?', 'is it worth upgrading?', 'love your content!',
+                        'this vs {competitor}?', 'you convinced me to buy!', 'keep up the great work!',
+                        'finally a honest review', 'I\'ve been waiting for this', 'great production quality!',
+                        'what camera do you use?', 'so helpful!', 'this is the best review I\'ve seen',
+                        'you\'re the reason I got into tech'
+                    ],
+                    competitors: ['Apple', 'Samsung', 'Google', 'Microsoft', 'ASUS', 'Dell', 'Lenovo', 'HP']
+                },
+                vlogs: {
+                    emoji: '📸',
+                    label: 'Vlogs',
+                    growthBase: 0.9,
+                    avatarOptions: ['📸', '🌴', '✈️', '🏙️', '🌅', '🎥', '📹', '🌟'],
+                    comments: [
+                        'love your vlogs!', 'where is this?', 'you\'re so funny!', 'great editing!',
+                        'I watch every day!', 'this is so inspiring!', 'you\'re my favorite creator!',
+                        'what camera do you use?', 'this place looks amazing!', 'so much fun!',
+                        'I want to visit this place', 'you\'re living the dream!', 'great vibes!',
+                        'I love your personality!', 'this made my day', 'keep being you!',
+                        'so authentic!', 'I feel like I\'m there with you', 'this is so real',
+                        'you inspire me to travel'
+                    ]
+                },
+                cooking: {
+                    emoji: '🍳',
+                    label: 'Cooking',
+                    growthBase: 0.7,
+                    avatarOptions: ['🍳', '👨‍🍳', '🍝', '🥘', '🧑‍🍳', '🍰', '🥗', '🌮'],
+                    comments: [
+                        'recipe please!', 'looks delicious!', 'trying this tonight!', 'you\'re a chef!',
+                        'this is amazing!', 'I made this and it was great!', 'love your cooking!',
+                        'what\'s your secret?', 'so professional!', 'I\'m hungry now!',
+                        'this is the best recipe channel', 'can you make {dish}?', 'you\'re so talented!',
+                        'I love the way you explain things', 'great presentation!', 'my family loved this!',
+                        'this is so helpful!', 'I\'m a beginner and this helped', 'you make it look easy!',
+                        'I watch you every day!'
+                    ],
+                    dishes: ['pasta', 'pizza', 'sushi', 'ramen', 'steak', 'cake', 'bread', 'curry', 'tacos',
+                        'risotto'
+                    ]
+                },
+                music: {
+                    emoji: '🎵',
+                    label: 'Music',
+                    growthBase: 0.8,
+                    avatarOptions: ['🎵', '🎶', '🎸', '🎹', '🥁', '🎤', '🎧', '🎼'],
+                    comments: [
+                        'this slaps!', 'what\'s the chord progression?', 'great voice!', 'this is fire!',
+                        'I love this!', 'you\'re so talented!', 'best music channel!',
+                        'what equipment do you use?', 'this is my new favorite song', 'you\'re amazing!',
+                        'I listen to this on repeat', 'great production!', 'when\'s the next release?',
+                        'your voice is incredible!', 'this is so well made', 'I\'m a fan!',
+                        'this reminds me of {artist}', 'so much emotion!', 'this is perfect!',
+                        'you deserve more recognition!'
+                    ],
+                    artists: ['Ed Sheeran', 'Taylor Swift', 'Billie Eilish', 'Drake', 'The Weeknd', 'Bruno Mars',
+                        'Adele', 'Coldplay'
+                    ]
+                },
+                fitness: {
+                    emoji: '💪',
+                    label: 'Fitness',
+                    growthBase: 0.7,
+                    avatarOptions: ['💪', '🏋️', '💪', '🥇', '🔥', '💯', '⚡', '🏃'],
+                    comments: [
+                        'great workout!', 'what\'s your routine?', 'motivation!', 'you\'re so fit!',
+                        'I started this and it works!', 'love your content!', 'best fitness channel!',
+                        'what supplements do you take?', 'how many reps?', 'you\'re an inspiration!',
+                        'this is exactly what I needed', 'you\'re so strong!', 'keep it up!',
+                        'great form!', 'I\'ve learned so much', 'this is the best workout plan',
+                        'you\'re the reason I go to the gym', 'so motivating!', 'love the energy!',
+                        'I\'ve been following your plan'
+                    ]
+                },
+                comedy: {
+                    emoji: '😂',
+                    label: 'Comedy',
+                    growthBase: 1.0,
+                    avatarOptions: ['😂', '🤣', '😆', '🎭', '🤡', '😜', '🤪', '😹'],
+                    comments: [
+                        'haha so funny!', 'this is gold!', 'can\'t stop laughing!', 'you\'re hilarious!',
+                        'I\'m crying!', 'best comedy channel!', 'this made my day!',
+                        'how do you come up with this?', 'so relatable!', 'lol!',
+                        'I watch this when I\'m sad', 'you\'re the funniest person!', 'this is too good!',
+                        'I can\'t breathe!', 'so accurate!', 'this is perfect!',
+                        'you\'re so talented!', 'I love your humor!', 'this is so stupid (in a good way)',
+                        'you deserve more subs!'
+                    ]
+                },
+                education: {
+                    emoji: '📚',
+                    label: 'Education',
+                    growthBase: 0.9,
+                    avatarOptions: ['📚', '🎓', '🧠', '📖', '✏️', '🔬', '📐', '💡'],
+                    comments: [
+                        'great explanation!', 'helpful!', 'this is amazing!', 'you\'re a great teacher!',
+                        'I finally understand!', 'best education channel!', 'so clear!',
+                        'what topic next?', 'you made this so easy!', 'I\'m learning so much!',
+                        'this is the best explanation I\'ve seen', 'you\'re so smart!',
+                        'keep up the great work!', 'this helped me pass my exam', 'so detailed!',
+                        'I love your teaching style!', 'this is gold!', 'so well presented!',
+                        'you\'re the reason I passed', 'this is incredible!'
+                    ]
+                },
+                travel: {
+                    emoji: '🌍',
+                    label: 'Travel',
+                    growthBase: 0.6,
+                    avatarOptions: ['🌍', '✈️', '🌴', '🏔️', '🏖️', '🗺️', '🌊', '🏯'],
+                    comments: [
+                        'beautiful place!', 'where is this?', 'adding to my list!', 'great vlog!',
+                        'I want to go there!', 'so gorgeous!', 'best travel channel!',
+                        'what\'s the best time to visit?', 'how much did this cost?', 'incredible views!',
+                        'you\'re so lucky!', 'this is my dream destination', 'so inspiring!',
+                        'I love your travel content!', 'this place looks unreal!', 'great tips!',
+                        'you\'re the reason I started traveling', 'so informative!', 'this is amazing!',
+                        'I feel like I\'m there!'
+                    ]
+                },
+                art: {
+                    emoji: '🎨',
+                    label: 'Art',
+                    growthBase: 0.6,
+                    avatarOptions: ['🎨', '🖌️', '✏️', '🖍️', '🎭', '🖼️', '🎯', '💫'],
+                    comments: [
+                        'amazing work!', 'what medium?', 'so talented!', 'this is beautiful!',
+                        'I love your style!', 'best art channel!', 'you\'re so creative!',
+                        'how long did this take?', 'this is inspiring!', 'I wish I could draw like this!',
+                        'this is the best art I\'ve seen', 'you\'re so skilled!', 'love your content!',
+                        'what supplies do you use?', 'this is so well done!', 'you\'re incredible!',
+                        'I\'m trying to learn from you', 'so much talent!', 'this is breathtaking!',
+                        'you deserve more recognition!'
+                    ]
+                }
+            };
+
+            // ─── Device config ───
+            const DEVICE_CONFIG = {
+                pc: { emoji: '🖥️', label: 'PC', growthMod: 1.3, comments: ['I play on PC too!', 'PC master race!',
+                        'what are your specs?', 'this looks great on PC!'
+                    ] },
+                playstation: { emoji: '🎮', label: 'PlayStation', growthMod: 1.0, comments: ['PlayStation gang!',
+                        'PS5 version looks amazing!', 'I love this on PlayStation!', 'add me on PSN!'
+                    ] },
+                xbox: { emoji: '🟢', label: 'Xbox', growthMod: 1.0, comments: ['Xbox gang!', 'Game Pass is amazing!',
+                        'this is great on Xbox!', 'what\'s your gamertag?'
+                    ] },
+                mobile: { emoji: '📱', label: 'Mobile', growthMod: 0.7, comments: ['Mobile gamers unite!',
+                        'this works great on my phone!', 'I play on mobile too!', 'what device do you use?'
+                    ] },
+                nintendo: { emoji: '🔴', label: 'Nintendo', growthMod: 0.7, comments: ['Nintendo gang!',
+                        'this is perfect for Switch!', 'I love Nintendo!', 'what\'s your friend code?'
+                    ] }
+            };
+
+            // ─── State ───
+            let state = {
+                subCount: 0,
+                totalGainThisMin: 0,
+                totalLossThisMin: 0,
+                views: 0,
+                videos: 0,
+                comments: [],
+                isRunning: false,
+                timer: null,
+                secondCounter: 0,
+                minuteCounter: 0,
+                lastSecondGain: 0,
+                lastSecondLoss: 0,
+                totalComments: 0,
+                boostActive: false,
+                boostEnd: 0,
+            };
+
+            // ─── Helpers ───
+            function formatNumber(n) {
+                if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+                if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+                if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+                return Math.floor(n).toLocaleString('en-US');
+            }
+
+            function formatFull(n) {
+                return Math.floor(n).toLocaleString('en-US');
+            }
+
+            function randomItem(arr) {
+                return arr[Math.floor(Math.random() * arr.length)];
+            }
+
+            function randomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function randomFloat(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            function clamp(v, min, max) {
+                return Math.max(min, Math.min(max, v));
+            }
+
+            function getContentConfig() {
+                return CONTENT_CONFIG[contentStyle.value] || CONTENT_CONFIG.gaming;
+            }
+
+            function getDeviceConfig() {
+                return DEVICE_CONFIG[deviceSelect.value] || DEVICE_CONFIG.pc;
+            }
+
+            function getSpeed() {
+                return parseFloat(speedSelect.value) || 1;
+            }
+
+            function getGrowthRate() {
+                const content = getContentConfig();
+                const device = getDeviceConfig();
+                const base = content.growthBase || 1;
+                const mod = device.growthMod || 1;
+                const speed = getSpeed();
+                // Boost if active
+                let boost = 1;
+                if (state.boostActive && Date.now() < state.boostEnd) {
+                    boost = 2.5;
+                }
+                return base * mod * speed * boost;
+            }
+
+            function getChannelName() {
+                return channelNameInput.value.trim() || 'MyChannel';
+            }
+
+            function getAvatarEmoji() {
+                const config = getContentConfig();
+                return randomItem(config.avatarOptions) || '🎮';
+            }
+
+            // ─── Generate comments ───
+            function generateComment() {
+                const config = getContentConfig();
+                const device = getDeviceConfig();
+                const templates = config.comments || ['great content!'];
+                let text = randomItem(templates);
+
+                // Replace placeholders
+                if (text.includes('{game}') && config.games) {
+                    text = text.replace(/{game}/g, randomItem(config.games));
+                }
+                if (text.includes('{competitor}') && config.competitors) {
+                    text = text.replace(/{competitor}/g, randomItem(config.competitors));
+                }
+                if (text.includes('{dish}') && config.dishes) {
+                    text = text.replace(/{dish}/g, randomItem(config.dishes));
+                }
+                if (text.includes('{artist}') && config.artists) {
+                    text = text.replace(/{artist}/g, randomItem(config.artists));
+                }
+
+                // Sometimes add device-specific comment
+                if (Math.random() < 0.15 && device.comments) {
+                    text = randomItem(device.comments);
+                }
+
+                // Username generation
+                const prefixes = ['xX', 'Pro', 'Gamer', 'Tech', 'Noob', 'Master', 'Lord', 'Queen', 'King', 'Sir',
+                    'TheReal', 'OG', 'Epic', 'Ultra', 'Mega'
+                ];
+                const suffixes = ['Gamer', 'Pro', 'Master', 'YT', 'Plays', 'TV', 'Live', 'Gaming', 'Tech', 'Vibes',
+                    'Nation', 'Squad', 'Gang', 'Zone', 'World'
+                ];
+                const names = ['Alex', 'Max', 'Sam', 'Jordan', 'Taylor', 'Casey', 'Riley', 'Avery', 'Cameron',
+                    'Morgan', 'Jamie', 'Logan', 'Dakota', 'Parker', 'Quinn'
+                ];
+                const style = Math.random() > 0.5 ? 'prefix' : 'name';
+                let username;
+                if (style === 'prefix') {
+                    username = randomItem(prefixes) + randomItem(suffixes);
+                } else {
+                    const n = randomItem(names);
+                    const s = Math.random() > 0.5 ? randomItem(suffixes) : '';
+                    username = n + (s ? '_' + s : '');
+                }
+                // Add numbers sometimes
+                if (Math.random() > 0.6) {
+                    username += randomInt(1, 999);
+                }
+
+                // Avatar color based on username hash
+                let hash = 0;
+                for (let i = 0; i < username.length; i++) {
+                    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const hue = Math.abs(hash % 360);
+                const avatarColor = `hsl(${hue}, 70%, 55%)`;
+
+                // Avatar emoji from content config
+                const avatarEmoji = randomItem(config.avatarOptions) || '👤';
+
+                // Likes
+                const likes = Math.random() > 0.5 ? randomInt(0, 50) : 0;
+
+                // Time ago
+                const mins = randomInt(0, 5);
+                const secs = randomInt(0, 59);
+                let timeAgo = '';
+                if (mins === 0) {
+                    timeAgo = secs + 's ago';
+                } else if (mins === 1) {
+                    timeAgo = '1m ago';
+                } else {
+                    timeAgo = mins + 'm ago';
+                }
+
+                return {
+                    username,
+                    avatarEmoji,
+                    avatarColor,
+                    text,
+                    likes,
+                    timeAgo,
+                    timestamp: Date.now()
+                };
+            }
+
+            // ─── Update UI ───
+            function updateUI() {
+                // Sub count
+                subCountEl.textContent = formatFull(state.subCount);
+                gainThisMin.textContent = formatFull(state.totalGainThisMin);
+                lossThisMin.textContent = formatFull(state.totalLossThisMin);
+
+                // Views (roughly 10-50x subs)
+                const views = state.subCount * (15 + Math.random() * 35);
+                state.views = views;
+                viewCountEl.textContent = formatNumber(views);
+
+                // Videos (1 per 100 subs, min 1)
+                const videos = Math.max(1, Math.floor(state.subCount / 100) + 1);
+                state.videos = videos;
+                videoCountEl.textContent = formatFull(videos);
+
+                // Content labels
+                const content = getContentConfig();
+                contentEmoji.textContent = content.emoji;
+                contentLabel.textContent = content.label;
+
+                const device = getDeviceConfig();
+                deviceEmoji.textContent = device.emoji;
+                deviceLabel.textContent = device.label;
+
+                // Growth rate
+                const rate = getGrowthRate();
+                growthRateLabel.textContent = rate.toFixed(1) + 'x' + (state.boostActive && Date.now() < state
+                    .boostEnd ? ' 🔥' : '');
+
+                // Comment count
+                commentCountEl.textContent = state.totalComments + ' comments';
+            }
+
+            // ─── Render comments ───
+            function renderComments() {
+                if (state.comments.length === 0) {
+                    commentsFeed.innerHTML = `
+                        <div class="empty-comments">
+                            <span class="big-emoji">💬</span>
+                            Start the simulation to see comments roll in...
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                // Show latest 50 comments (newest first)
+                const show = state.comments.slice(-50).reverse();
+                for (const c of show) {
+                    const likesStr = c.likes > 0 ? `👍 ${c.likes}` : '';
+                    html += `
+                        <div class="comment-item">
+                            <div class="comment-avatar" style="background:${c.avatarColor}">
+                                ${c.avatarEmoji}
+                            </div>
+                            <div class="comment-body">
+                                <div class="comment-username">
+                                    ${c.username}
+                                    <span class="time">${c.timeAgo}</span>
+                                </div>
+                                <div class="comment-text">${c.text}</div>
+                                ${likesStr ? `<div class="comment-likes">${likesStr}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                commentsFeed.innerHTML = html;
+                // Scroll to top (newest)
+                commentsFeed.scrollTop = 0;
+            }
+
+            // ─── Core simulation step ───
+            function simulationStep() {
+                if (!state.isRunning) return;
+
+                const rate = getGrowthRate();
+                // Base gain per second (with randomness)
+                const baseGain = 0.3 + rate * 0.7;
+                const gainVariation = 0.3 + Math.random() * 1.4;
+                let rawGain = baseGain * gainVariation;
+
+                // Occasional viral spikes (5% chance)
+                if (Math.random() < 0.05 && state.subCount > 50) {
+                    rawGain *= 2.5 + Math.random() * 3;
+                }
+
+                // Losses: 15% chance of losing some subs (unsubscribes)
+                let loss = 0;
+                if (Math.random() < 0.15 && state.subCount > 10) {
+                    const lossRate = 0.1 + Math.random() * 0.5;
+                    loss = Math.min(rawGain * lossRate, state.subCount * 0.02);
+                    // Loss can't exceed gain
+                    loss = Math.min(loss, rawGain * 0.8);
+                }
+
+                // Clamp gain so we don't go crazy
+                rawGain = Math.min(rawGain, 200 + state.subCount * 0.01);
+
+                // Apply
+                const gain = Math.max(0, rawGain - loss);
+                const actualLoss = loss;
+
+                // Round to integers
+                const gainInt = Math.round(gain);
+                const lossInt = Math.round(actualLoss);
+
+                // Update count
+                state.subCount += gainInt - lossInt;
+                state.subCount = Math.max(0, state.subCount);
+
+                // Track per-minute stats
+                state.totalGainThisMin += gainInt;
+                state.totalLossThisMin += lossInt;
+
+                // Update views
+                state.views += gainInt * (12 + Math.random() * 20);
+
+                // Generate comments based on subs gained
+                const commentChance = Math.min(0.4 + state.subCount / 50000, 0.85);
+                const numComments = Math.floor(gainInt * commentChance) + (Math.random() < 0.2 ? 1 : 0);
+                const commentsToAdd = Math.min(numComments, 5);
+
+                for (let i = 0; i < commentsToAdd; i++) {
+                    const comment = generateComment();
+                    state.comments.push(comment);
+                    state.totalComments++;
+                }
+
+                // Keep comments manageable
+                if (state.comments.length > 200) {
+                    state.comments = state.comments.slice(-150);
+                }
+
+                // Pulse animation based on net change
+                const netChange = gainInt - lossInt;
+                subCountEl.classList.remove('pulse', 'gain', 'loss');
+                void subCountEl.offsetWidth;
+                if (netChange > 0) {
+                    subCountEl.classList.add('gain');
+                } else if (netChange < 0) {
+                    subCountEl.classList.add('loss');
+                } else {
+                    subCountEl.classList.add('pulse');
+                }
+
+                // Update UI
+                updateUI();
+                renderComments();
+
+                // Increment second counter
+                state.secondCounter++;
+                if (state.secondCounter >= 60) {
+                    state.secondCounter = 0;
+                    state.minuteCounter++;
+                    // Reset per-minute stats
+                    state.totalGainThisMin = 0;
+                    state.totalLossThisMin = 0;
+                    updateUI();
+                }
+
+                // Check boost expiry
+                if (state.boostActive && Date.now() > state.boostEnd) {
+                    state.boostActive = false;
+                    updateUI();
+                }
+
+                // Update badge for growth rate
+                const rateDisplay = getGrowthRate();
+                growthRateLabel.textContent = rateDisplay.toFixed(1) + 'x' + (state.boostActive ? ' 🔥' : '');
+            }
+
+            // ─── Start / Stop ───
+            function startSimulation() {
+                if (state.isRunning) return;
+                state.isRunning = true;
+                btnToggle.textContent = '⏸ Pause';
+                btnToggle.classList.remove('btn-primary');
+                btnToggle.classList.add('btn-danger');
+
+                // Run first step immediately
+                simulationStep();
+                state.timer = setInterval(simulationStep, 1000);
+            }
+
+            function stopSimulation() {
+                state.isRunning = false;
+                if (state.timer) {
+                    clearInterval(state.timer);
+                    state.timer = null;
+                }
+                btnToggle.textContent = '▶ Start';
+                btnToggle.classList.remove('btn-danger');
+                btnToggle.classList.add('btn-primary');
+            }
+
+            function toggleSimulation() {
+                if (state.isRunning) {
+                    stopSimulation();
+                } else {
+                    startSimulation();
+                }
+            }
+
+            // ─── Reset ───
+            function resetSimulation() {
+                if (state.isRunning) stopSimulation();
+                state.subCount = 0;
+                state.totalGainThisMin = 0;
+                state.totalLossThisMin = 0;
+                state.views = 0;
+                state.videos = 0;
+                state.comments = [];
+                state.totalComments = 0;
+                state.secondCounter = 0;
+                state.minuteCounter = 0;
+                state.boostActive = false;
+                state.boostEnd = 0;
+                subCountEl.textContent = '0';
+                gainThisMin.textContent = '0';
+                lossThisMin.textContent = '0';
+                viewCountEl.textContent = '0';
+                videoCountEl.textContent = '1';
+                commentCountEl.textContent = '0 comments';
+                updateUI();
+                renderComments();
+                subCountEl.classList.remove('pulse', 'gain', 'loss');
+            }
+
+            // ─── Boost ───
+            function boostSubs() {
+                if (!state.isRunning) {
+                    // If not running, start first
+                    startSimulation();
+                }
+                // Add a burst of subs
+                const boostAmount = 50 + Math.floor(Math.random() * 30);
+                state.subCount += boostAmount;
+                state.totalGainThisMin += boostAmount;
+                state.views += boostAmount * 20;
+
+                // Activate boost mode for 15 seconds
+                state.boostActive = true;
+                state.boostEnd = Date.now() + 15000;
+
+                // Generate extra comments from the boost
+                for (let i = 0; i < 3 + Math.floor(Math.random() * 4); i++) {
+                    const comment = generateComment();
+                    state.comments.push(comment);
+                    state.totalComments++;
+                }
+
+                if (state.comments.length > 200) {
+                    state.comments = state.comments.slice(-150);
+                }
+
+                subCountEl.classList.remove('pulse', 'gain', 'loss');
+                void subCountEl.offsetWidth;
+                subCountEl.classList.add('gain');
+
+                updateUI();
+                renderComments();
+
+                // Auto-disable boost after 15s
+                setTimeout(() => {
+                    state.boostActive = false;
+                    updateUI();
+                }, 15000);
+            }
+
+            // ─── Settings change handler ───
+            function onSettingsChange() {
+                if (state.isRunning) {
+                    // Update avatar immediately
+                    avatarDisplay.textContent = getAvatarEmoji();
+                    updateUI();
+                    // Re-render comments to show new style
+                    renderComments();
+                } else {
+                    avatarDisplay.textContent = getAvatarEmoji();
+                    updateUI();
+                    renderComments();
+                }
+            }
+
+            // ─── Event listeners ───
+            btnToggle.addEventListener('click', toggleSimulation);
+            btnReset.addEventListener('click', resetSimulation);
+            btnBoost.addEventListener('click', boostSubs);
+
+            contentStyle.addEventListener('change', onSettingsChange);
+            deviceSelect.addEventListener('change', onSettingsChange);
+            speedSelect.addEventListener('change', onSettingsChange);
+
+            channelNameInput.addEventListener('input', () => {
+                // Update avatar emoji based on name first letter
+                const name = channelNameInput.value.trim() || 'M';
+                // Keep the content-based avatar
+                avatarDisplay.textContent = getAvatarEmoji();
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleSimulation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSimulation();
+                }
+                if (e.key === 'b' || e.key === 'B') {
+                    boostSubs();
+                }
+            });
+
+            // ─── Init ───
+            resetSimulation();
+            avatarDisplay.textContent = getAvatarEmoji();
+            updateUI();
+
+            console.log('🎥 YouTube Sub Simulator loaded!');
+            console.log('   Space → Start/Pause');
+            console.log('   R → Reset');
+            console.log('   B → Boost +50 subs');
+            console.log('   Customize your channel, content, and device!');
+
+        })();
+    </script>
+</body>
+</html>
